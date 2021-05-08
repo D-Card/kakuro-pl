@@ -169,9 +169,39 @@ numero_comum(Lst_perms, Numero_comum) :-
     nth1(1, Perm_ind, Value),
     Numero_comum = (Pos, Value).
 
+%---------------------------------------------------
+% atribui_comuns(Perms_Possiveis), em que Perms_Possiveis eh uma lista de
+% permutacoes possiveis, actualiza esta lista atribuindo a cada espaco numeros comuns
+% a todas as permutacoes possiveis para esse espaco
+%---------------------------------------------------
+atribui_comuns([]).
+atribui_comuns([P|R]) :-
+    nth1(2, P, Perms),
+    nth1(1, P, Vars),
+    numeros_comuns(Perms, Numeros_comuns),
+    aux_atribui_comuns(Vars, Numeros_comuns),
+    atribui_comuns(R), !.
+
+aux_atribui_comuns(_, []).
+aux_atribui_comuns(Vars, [P|R]) :-
+    P = (Pos, Num),
+    nth1(Pos, Vars, Var),
+    Var = Num,
+    aux_atribui_comuns(Vars, R).
 
 
+%---------------------------------------------------
+% retira_impossiveis(Perms_Possiveis, Novas_Perms_Possiveis), em que Perms_Possiveis
+% eh uma lista de permutacoes possiveis, significa que Novas_Perms_Possiveis eh o 
+% resultado de tirar permutacoes impossiveis de Perms_Possiveis.
+%---------------------------------------------------
+retira_impossiveis(Perms_Possiveis, Novas_Perms_Possiveis) :-
+    bagof(Nova_Perm_Possivel, aux_retira_impossiveis(Perms_Possiveis, Nova_Perm_Possivel), Novas_Perms_Possiveis).
 
-
-    
-    
+aux_retira_impossiveis(Perms_Possiveis, Nova_Perm_Possivel) :-
+    member(Perm, Perms_Possiveis),
+    nth1(1, Perm, Vars),
+    nth1(2, Perm, Perms),
+    exclude(\=(Vars), Perms, Perms_fltr),
+    Nova_Perm_Possivel = [Vars, Perms_fltr].
+        
