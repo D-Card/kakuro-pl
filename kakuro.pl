@@ -1,4 +1,4 @@
-% :- [codigo_comum].
+:- [codigo_comum].
 
 %---------------------------------------------------
 % combinacoes_soma(N, Els, Soma, Combs), em que N eh um inteiro, Els eh uma
@@ -77,8 +77,8 @@ aux_espacos_com_posicoes_comuns(Espacos, Esp, Espaco) :-
     Esp = espaco(_, Vars),
     member(Var, Vars),
     any(==(Var), Vars2).
-    
 
+    
 %---------------------------------------------------
 % any(Cond, Lst), em que Cond eh uma condicao e Lst eh uma lista, devolve true
 % se algum elemento dentro da lista obedecer a condicao.
@@ -158,7 +158,9 @@ permutacoes_possiveis_espacos(Espacos, Perms_poss_esps) :-
 % pos.
 %---------------------------------------------------
 numeros_comuns(Lst_perms, Numeros_comuns) :-
-    findall(Num_com, numero_comum(Lst_perms, Num_com), Numeros_comuns).
+    findall(Num_com, numero_comum(Lst_perms, Num_com), Pares),
+    list_to_set(Pares, Numeros_comuns).
+
     
 
 numero_comum(Lst_perms, Numero_comum) :-
