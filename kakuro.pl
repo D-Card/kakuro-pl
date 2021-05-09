@@ -72,12 +72,12 @@ espacos_com_posicoes_comuns(Espacos, Esp, Esps_com) :-
 
 aux_espacos_com_posicoes_comuns(Espacos, Esp, Espaco) :-
     member(Espaco, Espacos), 
+    Espaco \== Esp,
     Espaco = espaco(_, Vars2),
     Esp = espaco(_, Vars),
     member(Var, Vars),
-    any(==(Var), Vars2), 
-    Espaco \== Esp.
-
+    any(==(Var), Vars2).
+    
 
 %---------------------------------------------------
 % any(Cond, Lst), em que Cond eh uma condicao e Lst eh uma lista, devolve true
@@ -116,7 +116,7 @@ permutacao_possivel_espaco(Perm ,Esp, Espacos, Perms_soma) :-
     findall(X, (member(Perm_soma, Perms_soma), Perm_soma = [Esp, X]), Perms_esp_temp),
     nth1(1, Perms_esp_temp, Perms_esp),
     member(Perm, Perms_esp),
-    bagof(Pos, Var^(member(Var, Perm), nth0(Pos, Perm, Var)), Indices),
+    bagof(Pos, Esp2^(member(Esp2, Esps_com), nth0(Pos, Esps_com, Esp2)), Indices),
     forall(member(Indice, Indices), (
         nth0(Indice, Perm, X),
         nth0(Indice, Esps_com, Esp_com),
@@ -276,7 +276,7 @@ resolve_aux(Perms_Possiveis, Novas_Perms_Possiveis) :-
     resolve_aux(Perms_Possiveis_temp2, Novas_Perms_Possiveis);
     simplifica(Perms_Possiveis, Novas_Perms_Possiveis).
 
-    
+
 %---------------------------------------------------
 % resolve(Puz), em que Puz eh um puzzle, resolve esse puzzle, isto eh, apos a 
 % invocacao deste predicado a grelha de Puz tem todas as variaveis substituidas
