@@ -1,4 +1,4 @@
-%:- [codigo_comum].
+% :- [codigo_comum].
 
 %---------------------------------------------------
 % combinacoes_soma(N, Els, Soma, Combs), em que N eh um inteiro, Els eh uma
@@ -273,7 +273,15 @@ resolve_aux(Perms_Possiveis, Novas_Perms_Possiveis) :-
     escolhe_menos_alternativas(Perms_Possiveis, Escolha), !,
     experimenta_perm(Escolha, Perms_Possiveis, Perms_Possiveis_temp),
     simplifica(Perms_Possiveis_temp, Perms_Possiveis_temp2),
-    resolve_aux(Perms_Possiveis_temp2, Novas_Perms_Possiveis).
-
-resolve_aux(Perms_Possiveis, Novas_Perms_Possiveis) :-
+    resolve_aux(Perms_Possiveis_temp2, Novas_Perms_Possiveis);
     simplifica(Perms_Possiveis, Novas_Perms_Possiveis).
+
+    
+%---------------------------------------------------
+% resolve(Puz), em que Puz eh um puzzle, resolve esse puzzle, isto eh, apos a 
+% invocacao deste predicado a grelha de Puz tem todas as variaveis substituidas
+% por numeros que respeitam as restricoes Puz.
+%---------------------------------------------------
+resolve(Puz):-
+    inicializa(Puz, Perms_Possiveis),
+    resolve_aux(Perms_Possiveis, _).
