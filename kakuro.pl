@@ -113,8 +113,8 @@ aux_permutacoes_soma_espacos(Espacos, [Espaco, Perms]) :-
 %---------------------------------------------------
 permutacao_possivel_espaco(Perm ,Esp, Espacos, Perms_soma) :-
     espacos_com_posicoes_comuns(Espacos, Esp, Esps_com),
-    findall(X, (member(Perm_soma, Perms_soma), Perm_soma = [Esp, X]), Perms_esp_bugada),
-    nth1(1, Perms_esp_bugada, Perms_esp),
+    findall(X, (member(Perm_soma, Perms_soma), Perm_soma = [Esp, X]), Perms_esp_temp),
+    nth1(1, Perms_esp_temp, Perms_esp),
     member(Perm, Perms_esp),
     bagof(Pos, Var^(member(Var, Perm), nth0(Pos, Perm, Var)), Indices),
     forall(member(Indice, Indices), (
@@ -205,3 +205,41 @@ aux_retira_impossiveis(Perms_Possiveis, Nova_Perm_Possivel) :-
     exclude(\=(Vars), Perms, Perms_fltr),
     Nova_Perm_Possivel = [Vars, Perms_fltr].
         
+
+%---------------------------------------------------
+% simplifica(Perms_Possiveis, Novas_Perms_Possiveis), em que Perms_Possiveis eh
+% uma lista de permutacoes possiveis, significa que Novas_Perms_Possiveis eh o 
+% resultado de simplificar Perms_Possiveis.
+%---------------------------------------------------
+simplifica(Perms_Possiveis, Novas_Perms_Possiveis) :-
+    atribui_comuns(Perms_Possiveis),
+    retira_impossiveis(Perms_Possiveis, Novas_Perms_Possiveis_temp),
+    (Perms_Possiveis == Novas_Perms_Possiveis_temp, 
+    Novas_Perms_Possiveis = Novas_Perms_Possiveis_temp, !;
+    simplifica(Novas_Perms_Possiveis_temp, Novas_Perms_Possiveis)).
+
+
+%---------------------------------------------------
+% inicializa(Puzzle, Perms_Possiveis), em que Puzzle eh um puzzle, significa
+% que Perms_Possiveis eh a lista de permutacoes possiveis simplificada para Puzzle.
+%---------------------------------------------------
+inicializa(Puzzle, Perms_Possiveis) :-
+    espacos_puzzle(Puzzle, Espacos),
+    permutacoes_possiveis_espacos(Espacos, Perms_Possiveis_temp),
+    simplifica(Perms_Possiveis_temp, Perms_Possiveis).
+
+
+%---------------------------------------------------
+% escolhe_menos_alternativas(Perms_Possiveis, Escolha), em que
+% Perms_Possiveis eh uma lista de permutacoes possiveis, significa que Escolha
+% eh o elemento de Perms_Possiveis escolhido segundo os criterios do enunciado.
+% Se todos os espacos em Perms_Possiveis tiverem associadas listas de
+% permutacoes unitarias, o predicado devolve "falso".
+%---------------------------------------------------
+escolhe_menos_alternativas(Perms_Possiveis, Escolha) :-
+    findall(Length, (member(Perms, Perms_Possiveis), nth1(2, Perms, Perm), length(Perm, Length)), Length_List),
+    exclude(==(1), Length_List, Length_List_filtr),
+    Length_List_filtr \== [],
+    min_list(Length_List_filtr, Menor),
+    nth1(Pos, Length_List, Menor), 
+    nth1(Pos, Perms_Possiveis, Escolha), !.
