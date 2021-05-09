@@ -1,4 +1,4 @@
-% :- [codigo_comum].
+%:- [codigo_comum].
 
 %---------------------------------------------------
 % combinacoes_soma(N, Els, Soma, Combs), em que N eh um inteiro, Els eh uma
@@ -237,9 +237,43 @@ inicializa(Puzzle, Perms_Possiveis) :-
 % permutacoes unitarias, o predicado devolve "falso".
 %---------------------------------------------------
 escolhe_menos_alternativas(Perms_Possiveis, Escolha) :-
-    findall(Length, (member(Perms, Perms_Possiveis), nth1(2, Perms, Perm), length(Perm, Length)), Length_List),
+    findall(Length, (member(Perms, Perms_Possiveis), 
+        nth1(2, Perms, Perm), 
+        length(Perm, Length)), Length_List),
     exclude(==(1), Length_List, Length_List_filtr),
     Length_List_filtr \== [],
     min_list(Length_List_filtr, Menor),
     nth1(Pos, Length_List, Menor), 
     nth1(Pos, Perms_Possiveis, Escolha), !.
+
+
+%---------------------------------------------------
+% A chamada experimenta_perm(Escolha, Perms_Possiveis,
+% Novas_Perms_Possiveis), em que Perms_Possiveis eh uma lista de permutacoes
+% possiveis, e Escolha eh um dos seus elementos (escolhido pelo predicado
+% anterior), segue os passos descritos no enunciado.
+%---------------------------------------------------
+experimenta_perm(Escolha, Perms_Possiveis, Novas_Perms_Possiveis) :-
+    Escolha = [Esp, Lst_Perms],
+    member(Perm, Lst_Perms),
+    Esp = Perm,
+    substitui(Escolha, [Esp, [Perm]], Perms_Possiveis, Novas_Perms_Possiveis).
+     
+substitui(_, _, [], []).
+substitui(Escolha, Subs, [Escolha|R], [Subs|R2]) :- substitui(Escolha, Subs, R, R2).
+substitui(Escolha, Subs, [P|R], [P|R2]) :- P \= Escolha, substitui(Escolha, Subs, R, R2).
+
+
+%---------------------------------------------------
+% resolve_aux(Perms_Possiveis, Novas_Perms_Possiveis), em que Perms_Possiveis
+% eh uma lista de permutacoes possiveis, siginifica que Novas_Perms_Possiveis eh
+% o resultado de aplicar o algoritmo descrito no enunciado.
+%---------------------------------------------------
+resolve_aux(Perms_Possiveis, Novas_Perms_Possiveis) :-
+    escolhe_menos_alternativas(Perms_Possiveis, Escolha), !,
+    experimenta_perm(Escolha, Perms_Possiveis, Perms_Possiveis_temp),
+    simplifica(Perms_Possiveis_temp, Perms_Possiveis_temp2),
+    resolve_aux(Perms_Possiveis_temp2, Novas_Perms_Possiveis).
+
+resolve_aux(Perms_Possiveis, Novas_Perms_Possiveis) :-
+    simplifica(Perms_Possiveis, Novas_Perms_Possiveis).
