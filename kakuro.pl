@@ -58,7 +58,7 @@ espacos_puzzle(Puzzle, Espacos) :-
     mat_transposta(Puzzle, Puzzle_transp),
     member(Fila, Puzzle_transp),
     espacos_fila(v, Fila, X)), Espacos_list),
-    flatten(Espacos_list, Espacos).
+    append(Espacos_list, Espacos).
 
 
 %---------------------------------------------------
@@ -117,8 +117,7 @@ permutacao_possivel_espaco(Perm ,Esp, Espacos, Perms_soma) :-
     nth1(1, Perms_esp_temp, Perms_esp),
     member(Perm, Perms_esp),
     bagof(Pos, Esp2^(member(Esp2, Esps_com), nth0(Pos, Esps_com, Esp2)), Indices),
-    forall(member(Indice, Indices), (
-        nth0(Indice, Perm, X),
+    forall(member(Indice, Indices), (nth0(Indice, Perm, X),
         nth0(Indice, Esps_com, Esp_com),
         member(Perm_soma, Perms_soma),
         Perm_soma = [Esp_com, Perms_esp_com],
@@ -262,8 +261,10 @@ experimenta_perm(Escolha, Perms_Possiveis, Novas_Perms_Possiveis) :-
     substitui(Escolha, [Esp, [Perm]], Perms_Possiveis, Novas_Perms_Possiveis).
      
 substitui(_, _, [], []).
-substitui(Escolha, Subs, [Escolha|R], [Subs|R2]) :- substitui(Escolha, Subs, R, R2).
-substitui(Escolha, Subs, [P|R], [P|R2]) :- P \= Escolha, substitui(Escolha, Subs, R, R2).
+substitui(Escolha, Subs, [Escolha|R], [Subs|R2]) :- 
+    substitui(Escolha, Subs, R, R2).
+substitui(Escolha, Subs, [P|R], [P|R2]) :- 
+    P \= Escolha, substitui(Escolha, Subs, R, R2).
 
 
 %---------------------------------------------------
