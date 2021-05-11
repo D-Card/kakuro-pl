@@ -1,4 +1,4 @@
-:- [codigo_comum].
+% :- [codigo_comum].
 
 %---------------------------------------------------
 % combinacoes_soma(N, Els, Soma, Combs), em que N eh um inteiro, Els eh uma
@@ -26,17 +26,18 @@ permutacoes_soma(N, Els, Soma, Perms) :-
 % puzzle e H_V eh um dos atomos h ou v, conforme se trate de uma fila horizontal ou vertical,
 % respectivamente, significa que Esp eh um espaco de Fila.
 %---------------------------------------------------
-espaco_fila(Fila, Esp, H_V) :-
+espaco_fila(Fila, espaco(Soma, R), H_V) :-
     append([_, [P|R], Resto], Fila),
     is_list(P),
-    (H_V == h -> P = [_, Soma]; 
-    H_V == v -> P = [Soma, _]),
     R \== [],
     maplist(var, R),
     (Resto == [];
     nth1(1, Resto, X),
     is_list(X)),
-    Esp = espaco(Soma, R).
+    (H_V == h,
+    P = [_, Soma]; 
+    H_V == v,
+    P = [Soma, _]).
 
 
 %---------------------------------------------------
@@ -70,11 +71,9 @@ espacos_com_posicoes_comuns(Espacos, Esp, Esps_com) :-
     bagof(X, aux_espacos_com_posicoes_comuns(Espacos, Esp, X), Esps_com).
 
 
-aux_espacos_com_posicoes_comuns(Espacos, Esp, Espaco) :-
-    member(Espaco, Espacos), 
-    Espaco \== Esp,
-    Espaco = espaco(_, Vars2),
-    Esp = espaco(_, Vars),
+aux_espacos_com_posicoes_comuns(Espacos, espaco(Soma, Vars), espaco(Soma2, Vars2)) :-
+    member(espaco(Soma2, Vars2), Espacos), 
+    espaco(Soma, Vars) \== espaco(Soma2, Vars2),
     member(Var, Vars),
     any(==(Var), Vars2).
 
@@ -98,9 +97,8 @@ permutacoes_soma_espacos(Espacos, Perms_soma) :-
     bagof(X, aux_permutacoes_soma_espacos(Espacos, X), Perms_soma).
 
 
-aux_permutacoes_soma_espacos(Espacos, [Espaco, Perms]) :-
-    member(Espaco, Espacos),
-    Espaco = espaco(Soma, Vars),
+aux_permutacoes_soma_espacos(Espacos, [espaco(Soma, Vars), Perms]) :-
+    member(espaco(Soma, Vars), Espacos),
     length(Vars, Length),
     permutacoes_soma(Length, [1,2,3,4,5,6,7,8,9], Soma, Perms).
 
@@ -113,14 +111,13 @@ aux_permutacoes_soma_espacos(Espacos, [Espaco, Perms]) :-
 %---------------------------------------------------
 permutacao_possivel_espaco(Perm ,Esp, Espacos, Perms_soma) :-
     espacos_com_posicoes_comuns(Espacos, Esp, Esps_com),
-    findall(X, (member(Perm_soma, Perms_soma), Perm_soma = [Esp, X]), Perms_esp_temp),
-    nth1(1, Perms_esp_temp, Perms_esp),
-    member(Perm, Perms_esp),
-    bagof(Pos, Esp2^(member(Esp2, Esps_com), nth0(Pos, Esps_com, Esp2)), Indices),
-    forall(member(Indice, Indices), (nth0(Indice, Perm, X),
-        nth0(Indice, Esps_com, Esp_com),
-        member(Perm_soma, Perms_soma),
-        Perm_soma = [Esp_com, Perms_esp_com],
+    findall(X, (member([Esp, X], Perms_soma)), Perms_dup),
+    nth1(1, Perms_dup, Perms),
+    member(Perm, Perms),
+    forall(member(Esp_com, Esps_com), (nth0(Pos, Esps_com, Esp_com),
+        nth0(Pos, Perm, X),
+        member(Perm_soma2, Perms_soma),
+        Perm_soma2 = [Esp_com, Perms_esp_com],
         append(Perms_esp_com, Var_com),
         member(X, Var_com))).
 
@@ -133,10 +130,9 @@ permutacao_possivel_espaco(Perm ,Esp, Espacos, Perms_soma) :-
 % lista de variaveis de Esp e o segundo eh a lista ordenada de permutacoes possiveis para o
 % espaco Esp.
 %---------------------------------------------------
-permutacoes_possiveis_espaco(Espacos, Perms_soma, Esp, Perms_poss) :-
+permutacoes_possiveis_espaco(Espacos, Perms_soma, Esp, [Vars, Perms]) :-
     bagof(Perm, permutacao_possivel_espaco(Perm, Esp, Espacos, Perms_soma), Perms),
-    Esp = espaco(_, Vars),
-    Perms_poss = [Vars, Perms].
+    Esp = espaco(_, Vars).
 
 
 %---------------------------------------------------
@@ -162,13 +158,12 @@ numeros_comuns(Lst_perms, Numeros_comuns) :-
 
     
 
-numero_comum(Lst_perms, Numero_comum) :-
+numero_comum(Lst_perms, (Pos, Value)) :-
     mat_transposta(Lst_perms, Lst_perms_ind),
     member(Perm_ind, Lst_perms_ind),
     maplist(=(_), Perm_ind),
     nth1(Pos, Lst_perms_ind, Perm_ind),
-    nth1(1, Perm_ind, Value),
-    Numero_comum = (Pos, Value).
+    nth1(1, Perm_ind, Value).
 
 %---------------------------------------------------
 % atribui_comuns(Perms_Possiveis), em que Perms_Possiveis eh uma lista de
@@ -199,12 +194,11 @@ aux_atribui_comuns(Vars, [P|R]) :-
 retira_impossiveis(Perms_Possiveis, Novas_Perms_Possiveis) :-
     bagof(Nova_Perm_Possivel, aux_retira_impossiveis(Perms_Possiveis, Nova_Perm_Possivel), Novas_Perms_Possiveis).
 
-aux_retira_impossiveis(Perms_Possiveis, Nova_Perm_Possivel) :-
+aux_retira_impossiveis(Perms_Possiveis, [Vars, Perms_fltr]) :-
     member(Perm, Perms_Possiveis),
     nth1(1, Perm, Vars),
     nth1(2, Perm, Perms),
-    exclude(\=(Vars), Perms, Perms_fltr),
-    Nova_Perm_Possivel = [Vars, Perms_fltr].
+    exclude(\=(Vars), Perms, Perms_fltr).
         
 
 %---------------------------------------------------
@@ -254,11 +248,10 @@ escolhe_menos_alternativas(Perms_Possiveis, Escolha) :-
 % possiveis, e Escolha eh um dos seus elementos (escolhido pelo predicado
 % anterior), segue os passos descritos no enunciado.
 %---------------------------------------------------
-experimenta_perm(Escolha, Perms_Possiveis, Novas_Perms_Possiveis) :-
-    Escolha = [Esp, Lst_Perms],
+experimenta_perm([Esp, Lst_Perms], Perms_Possiveis, Novas_Perms_Possiveis) :-
     member(Perm, Lst_Perms),
     Esp = Perm,
-    substitui(Escolha, [Esp, [Perm]], Perms_Possiveis, Novas_Perms_Possiveis).
+    substitui([Esp, Lst_Perms], [Esp, [Perm]], Perms_Possiveis, Novas_Perms_Possiveis).
      
 substitui(_, _, [], []).
 substitui(Escolha, Subs, [Escolha|R], [Subs|R2]) :- 
