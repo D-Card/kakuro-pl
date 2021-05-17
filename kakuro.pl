@@ -31,13 +31,9 @@ espaco_fila(Fila, espaco(Soma, R), H_V) :-
     is_list(P),
     R \== [],
     maplist(var, R),
-    (Resto == [];
-    nth1(1, Resto, X),
+    (Resto == []; nth1(1, Resto, X),
     is_list(X)),
-    (H_V == h,
-    P = [_, Soma]; 
-    H_V == v,
-    P = [Soma, _]).
+    (H_V == h, P = [_, Soma]; H_V == v, P = [Soma, _]).
 
 
 %---------------------------------------------------
