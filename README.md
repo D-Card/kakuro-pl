@@ -1,4 +1,4 @@
-# kakuro-pl
+# Kakuro solver
 
 Project 1 for 2020/2021 Programming Logic @ IST
 
